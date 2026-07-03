@@ -1,0 +1,57 @@
+:root{
+  --bg:#0f172a; --panel:#1e293b; --panel2:#273449;
+  --text:#e2e8f0; --muted:#94a3b8;
+  --good:#22c55e; --medium:#f97316; --bad:#ef4444; --accent:#38bdf8;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0}
+body{
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:var(--bg); color:var(--text); min-height:100vh;
+}
+header{
+  display:flex; align-items:center; justify-content:space-between;
+  padding:16px 20px; background:var(--panel); border-bottom:1px solid #0b1220;
+}
+header h1{font-size:1.15rem; margin:0; font-weight:600}
+.clock{font-variant-numeric:tabular-nums; font-size:1.1rem; color:var(--accent)}
+
+main{max-width:900px; margin:0 auto; padding:20px}
+
+.cards{display:grid; grid-template-columns:repeat(3,1fr); gap:14px}
+@media (max-width:600px){.cards{grid-template-columns:1fr}}
+.card{
+  background:var(--panel); border-radius:14px; padding:16px 18px;
+  border:1px solid #0b1220;
+}
+.card .label{color:var(--muted); font-size:.85rem; margin-bottom:6px}
+.card .value{font-size:2.1rem; font-weight:700; font-variant-numeric:tabular-nums}
+.card .value small{font-size:.95rem; font-weight:500; color:var(--muted); margin-left:4px}
+.card .hint{font-size:.8rem; margin-top:4px; height:1em}
+
+/* CO2-Ampel-Farbe der Karte */
+#card-co2.good  {box-shadow:inset 0 0 0 2px var(--good)}
+#card-co2.medium{box-shadow:inset 0 0 0 2px var(--medium)}
+#card-co2.bad   {box-shadow:inset 0 0 0 2px var(--bad)}
+#card-co2.good   #co2-hint{color:var(--good)}
+#card-co2.medium #co2-hint{color:var(--medium)}
+#card-co2.bad    #co2-hint{color:var(--bad)}
+
+.chart-box{background:var(--panel); border-radius:14px; padding:16px; margin-top:16px; border:1px solid #0b1220}
+.chart-head{display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; flex-wrap:wrap; gap:8px}
+.tabs button{
+  background:var(--panel2); color:var(--muted); border:0; padding:6px 12px;
+  border-radius:8px; cursor:pointer; font-size:.85rem; margin-right:6px;
+}
+.tabs button.active{background:var(--accent); color:#04223a; font-weight:600}
+.range{color:var(--muted); font-size:.8rem}
+canvas{width:100%; height:280px; display:block}
+
+footer{
+  max-width:900px; margin:10px auto 30px; padding:0 20px;
+  color:var(--muted); font-size:.82rem; display:flex; align-items:center; gap:6px; flex-wrap:wrap;
+}
+footer a{color:var(--accent); text-decoration:none}
+.sep{opacity:.4}
+.dot{width:9px; height:9px; border-radius:50%; background:var(--muted); display:inline-block}
+.dot.ok{background:var(--good)} .dot.warn{background:var(--medium)} .dot.err{background:var(--bad)}

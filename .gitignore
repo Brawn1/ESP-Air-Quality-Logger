@@ -1,0 +1,24 @@
+# Arduino / PlatformIO Build-Artefakte
+build/
+.pio/
+.pioenvs/
+.piolibdeps/
+*.hex
+*.bin
+*.elf
+*.map
+
+# Arduino IDE
+*.ino.cpp
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+
+# Claude Code lokale Einstellungen
+.claude/settings.local.json
+
+# Betriebssystem
+.DS_Store
+Thumbs.db

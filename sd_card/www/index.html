@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Raumluft-Qualität</title>
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <header>
+    <h1>Raumluft&#8209;Qualität</h1>
+    <div class="clock" id="clock">--:--:--</div>
+  </header>
+
+  <main>
+    <section class="cards">
+      <div class="card" id="card-co2">
+        <div class="label">CO₂</div>
+        <div class="value"><span id="co2">--</span><small>ppm</small></div>
+        <div class="hint" id="co2-hint">&nbsp;</div>
+      </div>
+      <div class="card">
+        <div class="label">Temperatur</div>
+        <div class="value"><span id="temp">--</span><small>°C</small></div>
+      </div>
+      <div class="card">
+        <div class="label">Luftfeuchte</div>
+        <div class="value"><span id="hum">--</span><small>%</small></div>
+      </div>
+    </section>
+
+    <section class="chart-box">
+      <div class="chart-head">
+        <div class="tabs" id="tabs">
+          <button data-key="co2"  class="active">CO₂</button>
+          <button data-key="temp">Temperatur</button>
+          <button data-key="hum">Luftfeuchte</button>
+          <button data-key="heap">RAM</button>
+        </div>
+        <div class="range" id="range">letzte 30 Messungen</div>
+      </div>
+      <canvas id="chart"></canvas>
+    </section>
+  </main>
+
+  <footer>
+    <span class="dot" id="dot-net"></span><span id="net">Netzwerk …</span>
+    <span class="sep">·</span>
+    <span class="dot" id="dot-sd"></span><span id="sd">SD</span>
+    <span class="sep">·</span>
+    <span class="dot" id="dot-rtc"></span><span id="rtc">RTC</span>
+    <span class="sep">·</span>
+    <a href="/api/history" target="_blank">API</a>
+    <span class="sep">·</span>
+    <span id="heap" title="freier Heap (Minimum seit Start) · Laufzeit">Heap –</span>
+    <span class="sep">·</span>
+    <a href="https://github.com/Brawn1/ESP-Air-Quality-Logger" target="_blank" rel="noopener">GitHub</a>
+    <span class="sep">·</span>
+    <span title="Lizenz">AGPL-3.0</span>
+  </footer>
+
+  <script src="/app.js"></script>
+</body>
+</html>
