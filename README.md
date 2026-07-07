@@ -1,7 +1,7 @@
 # Raumluft-Qualität-Messung (ESP32-S3-Zero)
 
 CO₂-, Temperatur- und Feuchte-Messung mit dem **SCD30**, Anzeige auf einem
-**0,96" OLED**, Status-Anzeige über einen **WS2812B-LED-Balken**, Uhrzeit von
+**0,96" OLED**, Status-Anzeige über eine **WS2812B-LED-Ampel**, Uhrzeit von
 einer **DS3231-RTC** (mit NTP-Abgleich), Datenlogging auf **MicroSD** und einem
 **WLAN-Webinterface**, dessen statische Dateien von der SD-Karte ausgeliefert
 werden.
@@ -15,7 +15,7 @@ des ESP32-S3.
 
 - **Messung** von CO₂ / Temperatur / Luftfeuchte (SCD30, NDIR-Sensor)
 - **OLED-Anzeige**: Uhrzeit, IP-Adresse, Messwerte groß + Ampel-Bewertung
-- **LED-Balken** (WS2812B) als CO₂-Level-Meter zum Ablesen quer durch den Raum
+- **LED-Ampel** (WS2812B): grün/orange/rot je nach CO₂, gut ablesbar quer durch den Raum
 - **Weboberfläche** (responsiv, ohne externe Bibliotheken) mit Live-Werten und
   Verlaufsgraph (CO₂ / Temp / Feuchte umschaltbar)
 - **Datenlogging** als Tages-CSV auf SD; Verlauf übersteht Neustart (`/history.json`)
@@ -29,7 +29,7 @@ des ESP32-S3.
 
 | Task          | Kern | Prio | Aufgabe                                                |
 |---------------|:----:|:----:|--------------------------------------------------------|
-| `SensorTask`  |  1   |  3   | SCD30 lesen, Live-Wert/Verlauf/LED-Balken, Logs auslösen, BOOT-Taster |
+| `SensorTask`  |  1   |  3   | SCD30 lesen, Live-Wert/Verlauf/LED-Ampel, Logs auslösen, BOOT-Taster |
 | `DisplayTask` |  1   |  2   | OLED zeichnen (Uhr, IP, Werte, Bewertung)              |
 | `LoggerTask`  |  1   |  2   | SD-Aufträge abarbeiten (CSV + `/history.json`)         |
 | `NetworkTask` |  0   |  1   | WLAN (STA + AP-Fallback), NTP, Webserver-Verwaltung    |
@@ -84,14 +84,14 @@ selben Bus bleibt stumm. Deshalb hat das OLED einen eigenen Bus.
 | CS                              | GPIO5         |
 | VCC / GND                       | 3V3 / GND     |
 
-### WS2812B-Statusstreifen (CO₂-Balken)
+### WS2812B-Statusstreifen (CO₂-Ampel)
 | Streifen | ESP32-S3-Zero |
 |----------|---------------|
 | DIN (Pfeilrichtung beachten!) | GPIO2 (alt. GPIO1) |
 | 5V       | 5V            |
 | GND      | GND           |
 
-> **GPIO3 meiden** (Strapping-Pin). 8 LEDs sind auf `LED_BRIGHTNESS = 30/255`
+> **GPIO3 meiden** (Strapping-Pin). Die LEDs (`NUM_STATUS_LEDS`, Standard 4) sind auf `LED_BRIGHTNESS = 30/255`
 > gedimmt (Strom/Blendung); bei langen/hellen Streifen externes 5V-Netzteil mit
 > gemeinsamer GND. Kurze Streifen laufen meist direkt mit dem 3,3-V-Datensignal,
 > sonst Pegelwandler (3,3→5 V).
@@ -127,7 +127,7 @@ code/                 ← Arduino-Sketch (alle Dateien gehören dazu)
   AppTime.*           DS3231-RTC + NTP
   Storage.*           SD: config.json, CSV, history.json, Datei-Auslieferung
   Display.*           OLED (SSD1306 / SH1106 umschaltbar)
-  Led.*               WS2812B-CO₂-Balken
+  Led.*               WS2812B-CO₂-Ampel
   WebNet.*            WLAN (STA/AP), NTP-Start, Async-Webserver
 sd_card/              ← Inhalt auf die SD-Karten-Wurzel kopieren
   config.json         WLAN + Einstellungen
@@ -225,11 +225,11 @@ T 22.8C  H 45%               ← Temperatur / Feuchte
 OK                           ← Bewertung: OK / Lueften empf. / Raum lueften
 ```
 
-### LED-Balken (WS2812B)
-Die Zahl der leuchtenden LEDs steigt mit dem CO₂-Wert
-(`CO2_BAR_MIN` = 400 … `CO2_BAR_MAX` = 2000 ppm). Feste Farbzonen:
+### LED-Ampel (WS2812B)
+Alle LEDs (`NUM_STATUS_LEDS`, Standard 4) leuchten gemeinsam in der Ampelfarbe des
+aktuellen CO₂-Werts:
 **grün ≤ 1000 (OK) → orange ≤ 1400 (Lüften empfohlen) → rot > 1400 (Raum lüften).**
-Kein Messwert → erste LED blau.
+Kein Messwert → blau.
 
 ### Weboberfläche
 Live-Werte (Polling), umschaltbarer Verlaufsgraph (CO₂ / Temp / Feuchte) und
@@ -332,5 +332,13 @@ ESP32-Core/S3-Variant bereits belegt und würden sonst Compile-Fehler auslösen.
 
 ## Lizenz
 
+Copyright (C) 2026 Guenter Bailey
+
 Dieses Projekt steht unter der **GNU Affero General Public License v3.0**
 (AGPL-3.0) – siehe [LICENSE](LICENSE).
+
+> Dieses Programm ist freie Software: Sie können es unter den Bedingungen der
+> AGPL-3.0 weitergeben und/oder verändern. Es wird **ohne jede Gewährleistung**
+> bereitgestellt; siehe die Lizenz für Details. Sie sollten eine Kopie der Lizenz
+> zusammen mit diesem Programm erhalten haben. Falls nicht, siehe
+> <https://www.gnu.org/licenses/>.

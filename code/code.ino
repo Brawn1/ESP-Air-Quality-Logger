@@ -160,6 +160,7 @@ void setup() {
   // 3) Peripherie
   pinMode(PIN_BOOT_BUTTON, INPUT_PULLUP);   // Taster active low (HIGH = nicht gedrueckt)
   ledBegin();
+  ledStartupTest();                         // Boot-Selbsttest der LEDs (Verdrahtung)
   ledSetCo2(0, false);
 
   if (storageBegin()) {

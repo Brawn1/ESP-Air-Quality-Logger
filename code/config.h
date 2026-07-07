@@ -86,11 +86,9 @@ static const uint16_t CO2_CALIBRATION_PPM = 420;    // Referenz = Frischluft (ak
 static const uint32_t CAL_HOLD_MS         = 3000;   // Taster so lange halten
 
 // ----------------------------------------------------------------------------
-//  WS2812B-Statusstreifen als CO2-Balken (Level-Meter)
+//  WS2812B-Statusstreifen als CO2-Ampel (alle LEDs = Ampelfarbe)
 // ----------------------------------------------------------------------------
-static const int      NUM_STATUS_LEDS = 8;      // Anzahl LEDs am Streifen
-static const uint16_t CO2_BAR_MIN     = 400;    // Balkenanfang (1 LED leuchtet)
-static const uint16_t CO2_BAR_MAX     = 2000;   // voller Balken (alle LEDs)
+static const int      NUM_STATUS_LEDS = 1;      // Anzahl LEDs am Streifen (bei neuem Streifen hier erhoehen)
 static const uint8_t  LED_BRIGHTNESS  = 30;     // 0..255 (gedimmt, spart Strom)
 
 // ----------------------------------------------------------------------------
