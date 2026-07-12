@@ -1,10 +1,13 @@
 // ============================================================================
-//  Display.cpp  -  SSD1306 ODER SH1106 (per OLED_USE_SH1106 in config.h)
+//  Display.cpp  -  SSD1306/SH1106, wahlweise SPI oder I2C
+//    OLED_USE_SH1106 : 0 = SSD1306, 1 = SH1106
+//    OLED_USE_I2C    : 0 = SPI (eigener HSPI-Bus), 1 = eigener 2. I2C-Bus (Wire1)
 // ============================================================================
 #include "Display.h"
 #include "AppTime.h"
 #include "Sync.h"
 #include <Adafruit_GFX.h>
+#include <Wire.h>
 
 #if OLED_USE_SH1106
   #include <Adafruit_SH110X.h>
@@ -16,12 +19,21 @@
   #define OLED_WHITE SSD1306_WHITE
 #endif
 
+// In beiden Modi nutzt NUR der DisplayTask den Bus (I2C = eigener 2. Bus Wire1,
+// SPI = eigener HSPI-Bus) -> kein Mutex noetig, Guard bleibt leer.
+struct OledGuard { };
+
 namespace {
-  // OLED an EIGENEM Hardware-SPI-Bus (HSPI) - dadurch kein Konflikt mit dem
-  // SD-Treiber. Nur der DisplayTask nutzt diesen Bus -> kein Mutex noetig.
+#if OLED_USE_I2C
+  // Eigener zweiter I2C-Bus (Peripherie 1) nur fuer das OLED, kein Reset-Pin (-1)
+  TwoWire s_oledWire(1);
+  OledDriver s_oled(OLED_WIDTH, OLED_HEIGHT, &s_oledWire, -1);
+#else
+  // SPI: eigener HSPI-Bus
   SPIClass s_oledSpi(HSPI);
   OledDriver s_oled(OLED_WIDTH, OLED_HEIGHT, &s_oledSpi,
                     PIN_OLED_DC, PIN_OLED_RST, PIN_OLED_CS);
+#endif
   bool s_ok = false;
 
   // CO2-Bewertungstext (ASCII, da der Standard-Font keine Umlaute darstellt)
@@ -33,20 +45,37 @@ namespace {
 }
 
 bool displayBegin() {
-  // eigenen HSPI-Bus starten (MISO = -1, nicht benoetigt). ESP32-SPIClass::begin
-  // ist idempotent -> ein spaeteres internes begin() der Lib aendert die Pins nicht.
+#if OLED_USE_I2C
+  // eigenen 2. I2C-Bus an den Display-Pins starten (400 kHz, eigener Bus)
+  s_oledWire.begin(PIN_OLED_I2C_SDA, PIN_OLED_I2C_SCL);
+  s_oledWire.setClock(400000);
+#else
+  // eigenen HSPI-Bus starten (MISO = -1, nicht benoetigt)
   s_oledSpi.begin(PIN_OLED_SCK, -1, PIN_OLED_MOSI);
+#endif
 
 #if OLED_USE_SH1106
-  s_ok = s_oled.begin(0, true);            // i2caddr wird bei SPI ignoriert
-  if (!s_ok) { Serial.println(F("[OLED] SH1106 init fehlgeschlagen!")); return false; }
-  Serial.println(F("[OLED] SH1106 (HSPI) initialisiert."));
-  s_oled.setContrast(OLED_CONTRAST);       // SH110X: kein Precharge-Kommando noetig
+  #if OLED_USE_I2C
+    s_ok = s_oled.begin(OLED_I2C_ADDR, true);
+  #else
+    s_ok = s_oled.begin(0, true);                  // Adresse bei SPI ignoriert
+  #endif
+#else  // SSD1306
+  #if OLED_USE_I2C
+    // periphBegin=false: Wire wurde in setup() bereits mit den Pins gestartet
+    s_ok = s_oled.begin(SSD1306_SWITCHCAPVCC, OLED_I2C_ADDR, true, false);
+  #else
+    s_ok = s_oled.begin(SSD1306_SWITCHCAPVCC, 0, true, false);
+  #endif
+#endif
+
+  if (!s_ok) { Serial.println(F("[OLED] init fehlgeschlagen!")); return false; }
+  Serial.println(F("[OLED] initialisiert."));
+
+  // Kontrast/Helligkeit
+#if OLED_USE_SH1106
+  s_oled.setContrast(OLED_CONTRAST);
 #else
-  // reset=true, periphBegin=false (Bus haben wir gerade selbst gestartet)
-  s_ok = s_oled.begin(SSD1306_SWITCHCAPVCC, 0, true, false);
-  if (!s_ok) { Serial.println(F("[OLED] SSD1306 init fehlgeschlagen!")); return false; }
-  Serial.println(F("[OLED] SSD1306 (HSPI) initialisiert."));
   s_oled.ssd1306_command(SSD1306_SETCONTRAST);
   s_oled.ssd1306_command(OLED_CONTRAST);
   s_oled.ssd1306_command(SSD1306_SETPRECHARGE);   // 0xD9, hellere Ausleuchtung
@@ -65,7 +94,7 @@ void displayShowBoot(const char* line1, const char* line2) {
   s_oled.setTextSize(1);
   s_oled.setCursor(0, 0);  s_oled.println(line1);
   s_oled.setCursor(0, 12); s_oled.println(line2);
-  s_oled.display();
+  { OledGuard g; s_oled.display(); }
 }
 
 void displayRender(const StatusSnapshot& snap) {
@@ -116,6 +145,6 @@ void displayRender(const StatusSnapshot& snap) {
   s_oled.setCursor(0, 55);
   if (snap.latest.valid) s_oled.print(co2Text(snap.latest.co2));
 
-  // --- einmalig ueber den eigenen HSPI-Bus flushen (kein Mutex noetig) ---
-  s_oled.display();
+  // --- einmalig flushen (bei I2C unter Bus-Sperre, bei SPI ohne) ---
+  { OledGuard g; s_oled.display(); }
 }

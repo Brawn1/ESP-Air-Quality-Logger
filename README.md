@@ -84,6 +84,21 @@ selben Bus bleibt stumm. Deshalb hat das OLED einen eigenen Bus.
 | CS                              | GPIO5         |
 | VCC / GND                       | 3V3 / GND     |
 
+**Alternative: I²C-OLED (4-polig)** – falls du ein SSD1306/SH1106 mit I²C statt SPI
+hast, in `config.h` `#define OLED_USE_I2C 1` setzen. Das OLED läuft dann auf einem
+**eigenen, zweiten I²C-Bus** (der ESP32-S3 hat zwei) — getrennt vom SCD30/RTC-Bus,
+daher **kein Mutex nötig**. Praktisch: Es werden **dieselben Pins wie beim SPI-D0/D1**
+verwendet, du musst also nichts umverdrahten:
+
+| I²C-OLED-Pin | ESP32-S3-Zero | (= SPI-Pin) |
+|--------------|---------------|-------------|
+| SCL          | GPIO7         | D0 |
+| SDA          | GPIO1         | D1 |
+| VCC / GND    | 3V3 / GND     | – |
+
+(Pins `PIN_OLED_I2C_SCL`/`PIN_OLED_I2C_SDA`, Adresse `OLED_I2C_ADDR` meist `0x3C`,
+kein Reset-Pin nötig. Bus läuft mit 400 kHz.)
+
 ### WS2812B-Statusstreifen (CO₂-Ampel)
 | Streifen | ESP32-S3-Zero |
 |----------|---------------|

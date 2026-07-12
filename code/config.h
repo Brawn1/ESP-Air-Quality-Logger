@@ -54,6 +54,17 @@ static const int OLED_HEIGHT = 64;
 // -> Zum Testen des anderen Display-Typs einfach umschalten und neu flashen.
 #define OLED_USE_SH1106 0
 
+// OLED-Anbindung waehlen:  0 = SPI (7-polig, eigener HSPI-Bus),
+//                          1 = I2C auf EIGENEM 2. Bus (Wire1) an den Display-Pins
+// Bei I2C wird ein separater I2C-Bus genutzt (NICHT der SCD30/RTC-Bus) -> keine
+// Umverdrahtung noetig, kein Mutex. Die Display-Pins bleiben GPIO7/GPIO1:
+//   GPIO7 (= D0 am Display) = SCL,  GPIO1 (= D1 am Display) = SDA
+#define OLED_USE_I2C 0
+
+static const uint8_t OLED_I2C_ADDR   = 0x3C;   // meist 0x3C, manche Module 0x3D
+static const int     PIN_OLED_I2C_SCL = 7;     // = D0 am Display (GPIO7)
+static const int     PIN_OLED_I2C_SDA = 1;     // = D1 am Display (GPIO1)
+
 // Helligkeit/Kontrast des OLED (0..255). 255 = maximal hell.
 static const uint8_t OLED_CONTRAST = 255;
 
