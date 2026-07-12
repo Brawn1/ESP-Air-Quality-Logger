@@ -34,18 +34,13 @@ bool sensorBegin() {
   int16_t err = s_scd30.setMeasurementInterval(interval);
   if (err) { logErr("setMeasurementInterval", err); }
 
-  // Temperatur-Offset gegen Eigenerwaermung (in 0.01 Grad C-Schritten, nur positiv)
-  float off = g_cfg.tempOffsetC;
-  if (off < 0.0f)  off = 0.0f;
-  if (off > 20.0f) off = 20.0f;
-  uint16_t offTicks = (uint16_t)(off * 100.0f + 0.5f);
-  err = s_scd30.setTemperatureOffset(offTicks);
-  if (err) { logErr("setTemperatureOffset", err); }
-
   err = s_scd30.startPeriodicMeasurement(0);   // 0 = keine Druckkompensation
   if (err) { logErr("startPeriodicMeasurement", err); s_ok = false; return false; }
 
-  Serial.printf("[Sensor] SCD30 ok, Intervall %us, Temp-Offset %.1f C\n", interval, off);
+  // Hinweis: Der Temperatur-Offset wird in sensorRead() per Software abgezogen
+  // (der Hardware-Offset des SCD30 greift bei manchen Sensoren nicht zuverlaessig).
+  Serial.printf("[Sensor] SCD30 ok, Intervall %us, Temp-Offset %.1f C (Software)\n",
+                interval, g_cfg.tempOffsetC);
   s_ok = true;
   return true;
 }
@@ -58,6 +53,7 @@ bool sensorRead(Sample& out) {
     if (s_scd30.getDataReady(ready) != 0 || ready == 0) return false;
     if (s_scd30.readMeasurementData(out.co2, out.temp, out.hum) != 0) return false;
   }
+  out.temp -= g_cfg.tempOffsetC;   // Software-Offset (Eigenerwaermung des SCD30)
   out.epoch = timeNowEpoch();   // liest RTC (eigener I2C-Guard darin)
   out.heap  = ESP.getFreeHeap();
   out.valid = (out.co2 > 0.0f && out.co2 < 40000.0f);

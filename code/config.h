@@ -66,7 +66,7 @@ static const uint8_t OLED_PRECHARGE = 0xF1;
 //  Mess- & Logintervalle
 // ----------------------------------------------------------------------------
 // Drei getrennte Kadenzen (alle zur Laufzeit ueber config.json ueberschreibbar):
-static const uint32_t SCD30_INTERVAL_S   = 5;    // Sensor-Messintervall (2..1800 s)
+static const uint32_t SCD30_INTERVAL_S   = 8;    // Sensor-Messintervall (2..1800 s)
 static const uint32_t HISTORY_INTERVAL_S = 90;   // Graph-Punkt + /history.json schreiben
 static const uint32_t LOG_INTERVAL_S     = 300;  // CSV-Archiv (5 min)
 
@@ -87,7 +87,8 @@ static const uint32_t CAL_HOLD_MS         = 3000;   // Taster so lange halten
 
 // ----------------------------------------------------------------------------
 //  Temperatur-Offset (SCD30 misst durch Eigenerwaermung zu hoch)
-//  Wert in Grad Celsius, den der Sensor intern abzieht (nur positiv moeglich).
+//  Wird per Software vom Messwert abgezogen: angezeigt = gemessen - Offset.
+//  Positiv = Anzeige senken (Normalfall), negativ = anheben moeglich.
 // ----------------------------------------------------------------------------
 static const float TEMP_OFFSET_C = 3.0f;
 
