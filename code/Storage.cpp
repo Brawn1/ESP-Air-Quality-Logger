@@ -85,6 +85,7 @@ void storageLoadConfig() {
   if (doc["log_interval_s"].is<uint32_t>())     g_cfg.logIntervalS     = doc["log_interval_s"];
   if (doc["history_interval_s"].is<uint32_t>()) g_cfg.historyIntervalS = doc["history_interval_s"];
   if (doc["scd30_interval_s"].is<uint32_t>())   g_cfg.scd30IntervalS   = doc["scd30_interval_s"];
+  if (doc["temp_offset_c"].is<float>())         g_cfg.tempOffsetC      = doc["temp_offset_c"];
   Serial.println(F("[SD] config.json geladen."));
 }
 

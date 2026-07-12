@@ -34,10 +34,18 @@ bool sensorBegin() {
   int16_t err = s_scd30.setMeasurementInterval(interval);
   if (err) { logErr("setMeasurementInterval", err); }
 
+  // Temperatur-Offset gegen Eigenerwaermung (in 0.01 Grad C-Schritten, nur positiv)
+  float off = g_cfg.tempOffsetC;
+  if (off < 0.0f)  off = 0.0f;
+  if (off > 20.0f) off = 20.0f;
+  uint16_t offTicks = (uint16_t)(off * 100.0f + 0.5f);
+  err = s_scd30.setTemperatureOffset(offTicks);
+  if (err) { logErr("setTemperatureOffset", err); }
+
   err = s_scd30.startPeriodicMeasurement(0);   // 0 = keine Druckkompensation
   if (err) { logErr("startPeriodicMeasurement", err); s_ok = false; return false; }
 
-  Serial.printf("[Sensor] SCD30 ok, Intervall %us\n", interval);
+  Serial.printf("[Sensor] SCD30 ok, Intervall %us, Temp-Offset %.1f C\n", interval, off);
   s_ok = true;
   return true;
 }

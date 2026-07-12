@@ -86,6 +86,12 @@ static const uint16_t CO2_CALIBRATION_PPM = 420;    // Referenz = Frischluft (ak
 static const uint32_t CAL_HOLD_MS         = 3000;   // Taster so lange halten
 
 // ----------------------------------------------------------------------------
+//  Temperatur-Offset (SCD30 misst durch Eigenerwaermung zu hoch)
+//  Wert in Grad Celsius, den der Sensor intern abzieht (nur positiv moeglich).
+// ----------------------------------------------------------------------------
+static const float TEMP_OFFSET_C = 3.0f;
+
+// ----------------------------------------------------------------------------
 //  WS2812B-Statusstreifen als CO2-Ampel (alle LEDs = Ampelfarbe)
 // ----------------------------------------------------------------------------
 static const int      NUM_STATUS_LEDS = 1;      // Anzahl LEDs am Streifen (bei neuem Streifen hier erhoehen)
@@ -130,6 +136,7 @@ struct AppConfig {
   uint32_t logIntervalS     = LOG_INTERVAL_S;      // CSV-Archiv-Takt (s)
   uint32_t historyIntervalS = HISTORY_INTERVAL_S;  // Graph-/History-Takt (s)
   uint32_t scd30IntervalS   = SCD30_INTERVAL_S;    // SCD30-Mess-Takt (s, 2..1800)
+  float    tempOffsetC      = TEMP_OFFSET_C;       // Temperatur-Offset (Grad C)
 };
 
 extern AppConfig g_cfg;

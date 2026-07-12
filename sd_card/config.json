@@ -12,5 +12,7 @@
 
   "scd30_interval_s": 5,
   "history_interval_s": 90,
-  "log_interval_s": 300
+  "log_interval_s": 300,
+
+  "temp_offset_c": 3.0
 }

@@ -208,6 +208,7 @@ Alle Werte werden **zur Laufzeit** von der SD geladen; die Konstanten in
 | `scd30_interval_s`   | `5`                 | Mess-Takt des Sensors (2…1800 s) |
 | `history_interval_s` | `90`                | Graph-Punkt + `/history.json` schreiben |
 | `log_interval_s`     | `300`               | CSV-Archiv-Takt (s) |
+| `temp_offset_c`      | `3.0`               | Temperatur-Offset gegen SCD30-Eigenerwärmung (°C, nur positiv) |
 
 > ⚠️ **JSON-Schlüssel sind Groß-/Kleinschreibung-sensitiv** – exakt so schreiben,
 > sonst wird der Eintrag still ignoriert und der Standardwert genutzt.
