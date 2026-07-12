@@ -89,6 +89,11 @@ void displayRender(const StatusSnapshot& snap) {
   // Zeile 2: IP-Adresse (STA-IP wenn verbunden, sonst eigene AP-IP)
   s_oled.setCursor(0, 8);
   s_oled.print(snap.ip);
+  // Dauerhafter Warnhinweis, falls keine SD-Karte erkannt wurde
+  if (!snap.sdOk) {
+    s_oled.setCursor(OLED_WIDTH - 42, 8);
+    s_oled.print(F("kein SD"));
+  }
 
   // === Messwerte ===
   // CO2 gross

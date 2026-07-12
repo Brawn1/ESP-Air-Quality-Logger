@@ -98,11 +98,12 @@ void displayTask(void*) {
   }
 }
 
-// Core 1: SD-Auftraege abarbeiten (blockierende I/O isoliert vom Sensor)
+// Core 1: SD-Auftraege abarbeiten + SD-Karte ueberwachen (I/O isoliert vom Sensor)
 void loggerTask(void*) {
   LogCmd cmd;
   for (;;) {
-    if (xQueueReceive(g_logQueue, &cmd, portMAX_DELAY) == pdTRUE) {
+    // Auf Auftrag warten, aber spaetestens alle 5 s aufwachen fuer den SD-Check.
+    if (xQueueReceive(g_logQueue, &cmd, pdMS_TO_TICKS(5000)) == pdTRUE) {
       if (cmd.type == CMD_LOG_CSV) {
         storageLogSample(cmd.sample);
       } else {                              // CMD_SAVE_HISTORY
@@ -111,6 +112,8 @@ void loggerTask(void*) {
         storageSaveHistory(snap);           // ...SD-Mutex -> keine Verschachtelung
       }
     }
+    // Herausziehen/Wiedereinstecken der Karte erkennen und Status melden.
+    dataSetSd(storageCheck());
   }
 }
 
@@ -174,7 +177,15 @@ void setup() {
 
   sensorBegin();
 
-  if (displayBegin()) displayShowBoot("Raumluft-Messung", "starte...");
+  if (displayBegin()) {
+    if (!storageOk()) {
+      // SD fehlt/defekt -> deutlich anzeigen (ohne SD gibt es auch kein Webinterface)
+      displayShowBoot("!! KEINE SD-KARTE", "fehlt oder defekt");
+      delay(3000);            // kurz stehen lassen, damit es auffaellt
+    } else {
+      displayShowBoot("Raumluft-Messung", "starte...");
+    }
+  }
 
   // 4) Queue + Tasks
   g_logQueue = xQueueCreate(LOGGER_QUEUE_LEN, sizeof(LogCmd));

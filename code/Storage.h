@@ -9,6 +9,10 @@
 bool storageBegin();                       // SD-Karte ueber SPI initialisieren
 bool storageOk();
 
+// Periodische Ueberwachung: erkennt Herausziehen und Wiedereinstecken der Karte.
+// Gibt den aktuellen SD-Status zurueck (true = Karte verfuegbar).
+bool storageCheck();
+
 void storageLoadConfig();                  // /config.json -> g_cfg (Defaults bleiben, falls fehlt)
 
 bool storageLogSample(const Sample& s);    // Messpunkt an Tages-CSV anhaengen

@@ -219,11 +219,17 @@ Alle Werte werden **zur Laufzeit** von der SD geladen; die Konstanten in
 ### OLED-Anzeige
 ```
 12:34:56              WiFi   ← Uhrzeit + Netz-Kennung (WiFi/AP)
-192.168.1.42                 ← IP (STA-IP, sonst eigene AP-IP)
+192.168.1.42     kein SD     ← IP (STA/AP); rechts "kein SD" falls Karte fehlt
 612          ppm             ← CO₂ groß
 T 22.8C  H 45%               ← Temperatur / Feuchte
 OK                           ← Bewertung: OK / Lueften empf. / Raum lueften
 ```
+
+Fehlt/defekt die SD-Karte, zeigt das Display beim Start einen Warn-Screen
+(„KEINE SD-KARTE") und dauerhaft den Hinweis **`kein SD`** neben der IP. Die
+Karte wird **im Betrieb überwacht** (alle ~5 s): Herausziehen wird erkannt und
+angezeigt, Wiedereinstecken automatisch übernommen. (Ohne SD gibt es kein
+Webinterface, da dessen Dateien auf der Karte liegen.)
 
 ### LED-Ampel (WS2812B)
 Alle LEDs (`NUM_STATUS_LEDS`, Standard 4) leuchten gemeinsam in der Ampelfarbe des

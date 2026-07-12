@@ -35,6 +35,31 @@ bool storageBegin() {
 
 bool storageOk() { return s_ok; }
 
+bool storageCheck() {
+  SpiGuard g;
+  if (s_ok) {
+    // Probe: Wurzelverzeichnis oeffnen. Schlaegt fehl, wenn die Karte weg ist.
+    File root = SD.open("/");
+    if (!root) {
+      Serial.println(F("[SD] Karte entfernt/nicht mehr lesbar!"));
+      s_ok = false;
+      SD.end();
+    } else {
+      root.close();
+    }
+  } else {
+    // Versuchen, eine (wieder) eingesteckte Karte zu mounten.
+    if (SD.begin(PIN_SD_CS, g_spi, 20000000) && SD.cardType() != CARD_NONE) {
+      Serial.println(F("[SD] Karte wieder erkannt."));
+      if (!SD.exists("/logs")) SD.mkdir("/logs");
+      s_ok = true;
+    } else {
+      SD.end();   // sauber schliessen, damit der naechste begin() frisch startet
+    }
+  }
+  return s_ok;
+}
+
 void storageLoadConfig() {
   if (!s_ok) return;
   SpiGuard g;
@@ -70,7 +95,7 @@ bool storageLogSample(const Sample& s) {
   SpiGuard g;
   bool isNew = !SD.exists(path);
   File f = SD.open(path, FILE_APPEND);
-  if (!f) { Serial.println(F("[SD] Log-Datei konnte nicht geoeffnet werden.")); return false; }
+  if (!f) { Serial.println(F("[SD] Log-Datei konnte nicht geoeffnet werden.")); s_ok = false; return false; }
 
   if (isNew) f.println(F("epoch_utc,datetime_local,co2_ppm,temp_c,hum_pct"));
 
@@ -87,7 +112,7 @@ bool storageSaveHistory(const StatusSnapshot& snap) {
   if (!s_ok) return false;
   SpiGuard g;
   File f = SD.open("/history.json", FILE_WRITE);   // "w" -> Datei wird neu geschrieben
-  if (!f) return false;
+  if (!f) { s_ok = false; return false; }
   f.print(F("{\"count\":"));
   f.print(snap.historyCount);
   f.print(F(",\"points\":["));
