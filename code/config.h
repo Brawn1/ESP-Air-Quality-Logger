@@ -33,6 +33,10 @@ static const int PIN_SPI_SCK  = 12;
 static const int PIN_SPI_MISO = 13;
 static const int PIN_SD_CS    = 10;
 
+// SD-SPI-Takt in Hz. Niedriger = robuster (v.a. bei grossen SDXC-Karten / langen
+// Leitungen). 4 MHz ist sehr zuverlaessig; unsere Datenmengen sind winzig.
+static const uint32_t SD_SPI_HZ = 4000000;
+
 // OLED-Bus (HSPI, eigener Bus)
 static const int PIN_OLED_SCK  = 7;
 static const int PIN_OLED_MOSI = 1;

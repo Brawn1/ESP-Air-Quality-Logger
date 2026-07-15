@@ -21,8 +21,8 @@ namespace {
 bool storageBegin() {
   // Der gemeinsame SPI-Bus (g_spi) wird bereits in setup() gestartet.
   SpiGuard g;
-  // 20 MHz ist konservativ und zuverlaessig; bei Problemen auf 4 MHz senken.
-  s_ok = SD.begin(PIN_SD_CS, g_spi, 20000000);
+  // Takt aus config.h (SD_SPI_HZ). Niedriger = robuster.
+  s_ok = SD.begin(PIN_SD_CS, g_spi, SD_SPI_HZ);
   if (!s_ok) { Serial.println(F("[SD] Karte nicht gefunden/init fehlgeschlagen!")); return false; }
 
   uint8_t type = SD.cardType();
@@ -36,20 +36,26 @@ bool storageBegin() {
 bool storageOk() { return s_ok; }
 
 bool storageCheck() {
+  static uint8_t failCount = 0;
+  const uint8_t FAILS_TO_REMOVE = 3;   // erst nach 3 Fehlern in Folge -> "entfernt"
+
   SpiGuard g;
   if (s_ok) {
-    // Probe: Wurzelverzeichnis oeffnen. Schlaegt fehl, wenn die Karte weg ist.
+    // Probe: Wurzelverzeichnis oeffnen. Ein einzelner Fehlschlag kann ein
+    // transienter SPI-Glitch sein -> erst nach mehreren in Folge werten.
     File root = SD.open("/");
-    if (!root) {
+    if (root) {
+      root.close();
+      failCount = 0;
+    } else if (++failCount >= FAILS_TO_REMOVE) {
       Serial.println(F("[SD] Karte entfernt/nicht mehr lesbar!"));
       s_ok = false;
+      failCount = 0;
       SD.end();
-    } else {
-      root.close();
     }
   } else {
     // Versuchen, eine (wieder) eingesteckte Karte zu mounten.
-    if (SD.begin(PIN_SD_CS, g_spi, 20000000) && SD.cardType() != CARD_NONE) {
+    if (SD.begin(PIN_SD_CS, g_spi, SD_SPI_HZ) && SD.cardType() != CARD_NONE) {
       Serial.println(F("[SD] Karte wieder erkannt."));
       if (!SD.exists("/logs")) SD.mkdir("/logs");
       s_ok = true;
@@ -96,7 +102,7 @@ bool storageLogSample(const Sample& s) {
   SpiGuard g;
   bool isNew = !SD.exists(path);
   File f = SD.open(path, FILE_APPEND);
-  if (!f) { Serial.println(F("[SD] Log-Datei konnte nicht geoeffnet werden.")); s_ok = false; return false; }
+  if (!f) { Serial.println(F("[SD] Log-Datei konnte nicht geoeffnet werden.")); return false; }
 
   if (isNew) f.println(F("epoch_utc,datetime_local,co2_ppm,temp_c,hum_pct"));
 
@@ -113,7 +119,7 @@ bool storageSaveHistory(const StatusSnapshot& snap) {
   if (!s_ok) return false;
   SpiGuard g;
   File f = SD.open("/history.json", FILE_WRITE);   // "w" -> Datei wird neu geschrieben
-  if (!f) { s_ok = false; return false; }
+  if (!f) return false;
   f.print(F("{\"count\":"));
   f.print(snap.historyCount);
   f.print(F(",\"points\":["));
