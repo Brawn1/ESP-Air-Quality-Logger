@@ -59,14 +59,14 @@ static const int OLED_HEIGHT = 64;
 // Bei I2C wird ein separater I2C-Bus genutzt (NICHT der SCD30/RTC-Bus) -> keine
 // Umverdrahtung noetig, kein Mutex. Die Display-Pins bleiben GPIO7/GPIO1:
 //   GPIO7 (= D0 am Display) = SCL,  GPIO1 (= D1 am Display) = SDA
-#define OLED_USE_I2C 0
+#define OLED_USE_I2C 1
 
 static const uint8_t OLED_I2C_ADDR   = 0x3C;   // meist 0x3C, manche Module 0x3D
 static const int     PIN_OLED_I2C_SCL = 7;     // = D0 am Display (GPIO7)
 static const int     PIN_OLED_I2C_SDA = 1;     // = D1 am Display (GPIO1)
 
 // Helligkeit/Kontrast des OLED (0..255). 255 = maximal hell.
-static const uint8_t OLED_CONTRAST = 255;
+static const uint8_t OLED_CONTRAST = 100;
 
 // Precharge-Periode (Befehl 0xD9): High-Nibble = Phase 2, Low-Nibble = Phase 1
 // (je 1..15 Takte). Laenger = heller/gleichmaessiger. Adafruit-Default 0xF1.
